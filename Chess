@@ -7,10 +7,8 @@ class Piece:
     def __init__(self, color, position):
         self.name
         self.position = position
-        self.color = color.lower()
+        self.color = color
         self.opponent_color = 'b' if self.color == 'w' else 'w'
-        if color not in ['b', 'w']:
-            raise TypeError('%s color should be \'w\' or \'b\'' % self.name)
         self.direction = 1 if self.color == 'w' else -1
         self.has_moved = False
         self.turn_first_moved = 0
@@ -390,17 +388,18 @@ class ChessBoard:
             pos = king.position[0] + m[0], king.position[1] + m[1]
             if pos[0] < 0 or pos[0] > 7 or pos[1] < 0 or pos[1] > 7:
                 continue
-            if b[pos[0]][pos[1]] and b[pos[0]][pos[1]].name == 'Knight' \
-                    and b[pos[0]][pos[1]].color != self.curr_player:
+            if b[pos[0]][pos[1]] and b[pos[0]][pos[1]].name == 'Knight' and b[pos[0]][pos[1]].color != self.curr_player:
                 return True
         y_dir = 1 if self.curr_player == 'w' else -1
         l_diag = king.position[0] - 1, king.position[1] + y_dir
         r_diag = king.position[0] + 1, king.position[1] + y_dir
         if l_diag[0] >= 0:
-            if b[l_diag[0]][l_diag[1]] and b[l_diag[0]][l_diag[1]].name == 'Pawn' and b[l_diag[0]][l_diag[1]].color != self.curr_player:
+            if b[l_diag[0]][l_diag[1]] and b[l_diag[0]][l_diag[1]].name == 'Pawn' \
+                    and b[l_diag[0]][l_diag[1]].color != self.curr_player:
                 return True
         if r_diag[0] <= 7:
-            if b[r_diag[0]][r_diag[1]] and b[r_diag[0]][r_diag[1]].name == 'Pawn' and b[r_diag[0]][r_diag[1]].color != self.curr_player:
+            if b[r_diag[0]][r_diag[1]] and b[r_diag[0]][r_diag[1]].name == 'Pawn' \
+                    and b[r_diag[0]][r_diag[1]].color != self.curr_player:
                 return True
 
     def is_curr_player_in_check(self, piece, moves):
@@ -417,14 +416,14 @@ class ChessBoard:
             self.board[move[0]][move[1]] = piece_at_move_pos
         return poss_moves
 
+
 class Game:
     def __init__(self):
         pygame.init()
-        self.game_display = pygame.display.set_mode((900, 650))
+        self.game_display = pygame.display.set_mode((900, 605))
         pygame.display.set_caption('Finally it`s working')
-        self.settings = {'board_image': 'images/brown_chess_board.jpg'}
+        self.settings = {'board_image': 'images/grass_board.jpg'}
         self.board_image = pygame.image.load(self.settings['board_image'])
-        self.clock = pygame.time.Clock()
         self.chess_board = ChessBoard()
         self.curr_selected_piece = None
         self.curr_poss_moves = []
@@ -441,39 +440,20 @@ class Game:
                     quit()
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.get_user_click()
-                    print(pygame.mouse.get_pos())
-            self.clock.tick(60)
 
     def draw_window(self):
-        self.game_display.fill(white)
+        self.game_display.fill((255,255,255))
         self.draw_side_menu()
         self.draw_board()
-        pygame.display.update()
+        pygame.display.flip()
 
     def draw_side_menu(self):
-        pygame.draw.rect(self.game_display, black, Rect((650, 100), (200, 400)), 5)
         if self.chess_board.curr_player == 'b':
-            pygame.draw.rect(self.game_display, blue, Rect((700, 25), (100, 50)), 5)
+            pygame.draw.rect(self.game_display, (34, 0, 255), Rect((700, 25), (100, 50)), 5)
         else:
-            pygame.draw.rect(self.game_display, blue, Rect((700, 525), (100, 50)), 5)
+            pygame.draw.rect(self.game_display, (34, 0, 255), Rect((700, 525), (100, 50)), 5)
         self.message_display('Black', (750, 50), fontsize=30)
         self.message_display('White', (750, 550), fontsize=30)
-        start = 0
-        if len(self.get_all_played_moves()) > 10:
-            start = len(self.get_all_played_moves()) - 10
-        for i, move in enumerate(self.get_all_played_moves()[start:]):
-            self.message_display(move, (740, 125 + (i * 30)), fontsize=20)
-            start += 1
-        for i, image in enumerate(self.black_pieces_taken_images):
-            image = pygame.image.load(image)
-            image = pygame.transform.scale(image, (30, 30))
-            pos = 610 + i * 20, 5
-            self.game_display.blit(image, pos)
-        for i, image in enumerate(self.white_pieces_taken_images):
-            image = pygame.image.load(image)
-            image = pygame.transform.scale(image, (30, 30))
-            pos = 610 + i * 20, 595
-            self.game_display.blit(image, pos)
 
     def draw_board(self):
         self.game_display.blit(self.board_image, (0, 0))
@@ -484,54 +464,51 @@ class Game:
             self.game_display.blit(piece_image, image_position)
         if self.curr_selected_piece:
             box_x, box_y = self.convert_space_to_coordinates(self.curr_selected_piece.position)
-            pygame.draw.rect(self.game_display, blue, Rect((box_x, box_y), (75, 75)), 5)
+            pygame.draw.rect(self.game_display, (34, 0, 255), Rect((box_x, box_y), (75, 75)), 5)
             for move in self.curr_poss_moves:
                 box1_x, box1_y = self.convert_space_to_coordinates(move)
-                pygame.draw.rect(self.game_display, red, Rect((box1_x, box1_y), (75, 75)), 5)
+                pygame.draw.rect(self.game_display, (209, 9, 9), Rect((box1_x, box1_y), (75, 75)), 5)
 
     def get_user_click(self):
         x, y = pygame.mouse.get_pos()
-        if y > 600:
-            pass
-        elif x > 600:
-            pass
+        selected_space = self.convert_coordinates_to_space(x, y)
+        if not self.curr_selected_piece:
+            if self.is_piece_of_curr_player(selected_space):
+                self.new_piece_selected(selected_space)
         else:
-            selected_space = self.convert_coordinates_to_space(x, y)
-            if not self.curr_selected_piece:
-                if self.is_piece_of_curr_player(selected_space):
-                    self.new_piece_selected(selected_space)
-            else:
-                if selected_space == self.curr_selected_piece.position:
-                    self.deselect_piece()
-                elif selected_space in self.curr_poss_moves:
-                    if self.curr_selected_piece.name == 'King' and selected_space in self.chess_board.get_castle_moves_for_curr_player():
-                            self.add_move(self.curr_selected_piece.position, selected_space)
-                            self.chess_board.castle_king(self.curr_selected_piece, selected_space)
-                    else:
+            if selected_space == self.curr_selected_piece.position:
+                self.deselect_piece()
+            elif selected_space in self.curr_poss_moves:
+                if self.curr_selected_piece.name == 'King' \
+                        and selected_space in self.chess_board.get_castle_moves_for_curr_player():
                         self.add_move(self.curr_selected_piece.position, selected_space)
-                        self.move_piece(self.curr_selected_piece, selected_space)
-                        if self.curr_selected_piece.name == 'Pawn' and selected_space[1] == 0 or selected_space[1] == 7:
-                            self.chess_board.board[selected_space[0]][selected_space[1]] = None
-                            self.chess_board.board[selected_space[0]][selected_space[1]] = Queen(self.chess_board.curr_player, selected_space)
-                    self.deselect_piece()
-                    self.change_curr_player()
-                    self.all_poss_moves = self.get_all_poss_moves()
-                    checkmate = True
-                    for piece_pos in self.all_poss_moves:
-                        if len(self.all_poss_moves[piece_pos]) != 0:
-                            checkmate = False
-                    if checkmate:
-                        self.draw_window()
-                        self.message_display('Checkmate!', (400, 300))
-                        winner = 'White' if self.chess_board.curr_player == 'b' else 'Black'
-                        self.message_display('%s wins!' % winner, (400, 400))
-                        pygame.display.update()
-                        time.sleep(2)
-                        quit()
-                elif selected_space in [piece.position for piece in self.chess_board.get_curr_player_pieces()]:
-                    self.new_piece_selected(selected_space)
+                        self.chess_board.castle_king(self.curr_selected_piece, selected_space)
                 else:
-                    self.deselect_piece()
+                    self.add_move(self.curr_selected_piece.position, selected_space)
+                    self.move_piece(self.curr_selected_piece, selected_space)
+                    if self.curr_selected_piece.name == 'Pawn' and selected_space[1] == 0 or selected_space[1] == 7:
+                        self.chess_board.board[selected_space[0]][selected_space[1]] = None
+                        self.chess_board.board[selected_space[0]][selected_space[1]] \
+                            = Queen(self.chess_board.curr_player, selected_space)
+                self.deselect_piece()
+                self.change_curr_player()
+                self.all_poss_moves = self.get_all_poss_moves()
+                checkmate = True
+                for piece_pos in self.all_poss_moves:
+                    if len(self.all_poss_moves[piece_pos]) != 0:
+                        checkmate = False
+                if checkmate:
+                    self.draw_window()
+                    self.message_display('Checkmate!', (400, 300))
+                    winner = 'White' if self.chess_board.curr_player == 'b' else 'Black'
+                    self.message_display('%s wins!' % winner, (400, 400))
+                    pygame.display.update()
+                    time.sleep(2)
+                    quit()
+            elif selected_space in [piece.position for piece in self.chess_board.get_curr_player_pieces()]:
+                self.new_piece_selected(selected_space)
+            else:
+                self.deselect_piece()
 
     def convert_coordinates_to_space(self, x, y):
         return x // 75, 7 - y // 75
@@ -554,9 +531,6 @@ class Game:
 
     def get_curr_poss_moves(self):
         return self.all_poss_moves[self.curr_selected_piece.position]
-
-    def get_all_played_moves(self):
-        return self.chess_board.played_moves
 
     def move_piece(self, piece, new_position):
         piece_captured = self.chess_board.move_piece(piece, new_position)
@@ -590,14 +564,8 @@ class Game:
             self.black_pieces_taken_images.append(piece.image)
 
     def message_display(self, text, point, fontsize=90):
-        large_text = pygame.font.Font('freesansbold.ttf', fontsize)
-        text_surface = large_text.render(text, True, black)
-        text_rect = text_surface.get_rect()
+        text_rect = pygame.font.Font('freesansbold.ttf', fontsize).render(text, True, (100, 100, 100)).get_rect()
         text_rect.center = (point)
-        self.game_display.blit(text_surface, text_rect)
+        self.game_display.blit(pygame.font.Font('freesansbold.ttf', fontsize).render(text, True, (0, 0, 0)), text_rect)
 
-white = (255,255,255)
-blue = (34, 0, 255)
-red = (209, 9, 9)
-black = (0, 0, 0)
 Game()
